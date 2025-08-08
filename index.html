@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnQuiz Music</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Nunito:wght@700;800&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+        }
+
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #ccc;
+            cursor: pointer;
+        }
+        
+        .instruction {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #d156ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .instruction p {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .stars {
+            display: flex;
+            gap: 5px;
+            font-size: 24px;
+            color: #ccc;
+        }
+
+        .stars .star.filled {
+            color: #FFD700;
+            transition: color 0.3s ease-in-out;
+        }
+        
+        .start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            border-radius: 16px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-in-out;
+            background: #252525;
+            color: white;
+            padding: 20px;
+        }
+        
+        .start-screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .start-screen h1 {
+            font-family: 'Nunito', sans-serif;
+            font-size: 60px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        
+        .start-screen p {
+            font-family: 'Roboto', sans-serif;
+            font-size: 20px;
+            margin-bottom: 40px;
+            max-width: 500px;
+        }
+        
+        .song-grid-container {
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        .song-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        .song-item {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 150px;
+        }
+        
+        .song-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .song-item.difficulty-facil {
+            background-color: #4CAF50; /* Verde */
+        }
+        .song-item.difficulty-medio {
+            background-color: #FFC107; /* Amarillo */
+        }
+        .song-item.difficulty-dificil {
+            background-color: #9c27b0; /* Morado */
+        }
+        
+        .song-item h3 {
+            font-family: 'Nunito', sans-serif;
+            font-size: 24px;
+            margin: 0;
+        }
+        
+        .song-item .record-stars {
+            font-size: 28px;
+            margin-top: 10px;
+        }
+        
+        .record-stars .star {
+            color: #ccc;
+        }
+        
+        .record-stars .star.filled {
+            color: #FFD700;
+        }
+
+        .menu-arrows {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+        .menu-arrows .arrow {
+            font-size: 40px;
+            cursor: pointer;
+            color: white;
+            user-select: none;
+            transition: transform 0.2s;
+            pointer-events: all;
+            background: rgba(0,0,0,0.2);
+            padding: 5px 15px;
+            border-radius: 5px;
+        }
+        .menu-arrows .arrow:hover {
+            transform: scale(1.2);
+        }
+        .menu-arrows .arrow.hidden {
+            visibility: hidden;
+        }
+        
+        .upload-button {
+            padding: 15px 30px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            background-color: #1cb0f6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 0 #1886a8;
+            margin-top: 30px;
+        }
+        .upload-button:hover {
+            background-color: #1886a8;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #1886a8;
+        }
+
+        .end-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 20;
+            border-radius: 16px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-in-out;
+            transform: translateY(100%);
+        }
+        .end-screen.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease-in-out;
+        }
+        .end-screen h2 {
+            font-family: 'Nunito', sans-serif;
+            font-size: 40px;
+            font-weight: 800;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        .final-stars {
+            font-size: 60px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        .final-stars .star {
+            color: #ccc;
+            transform: scale(0.8);
+            transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        .final-stars .star.filled {
+            color: #FFD700;
+            transform: scale(1);
+            animation: starBounce 0.5s ease-in-out;
+        }
+        @keyframes starBounce {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .summary {
+            font-size: 18px;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+        }
+
+        .summary .score-item {
+            display: block;
+            margin: 10px 0;
+            color: #555;
+        }
+        .summary .score-item .label {
+            font-weight: 800;
+            color: #333;
+        }
+        .summary .score-item .value {
+            font-weight: 800;
+            font-size: 24px;
+            display: inline-block;
+            min-width: 30px;
+        }
+        .summary .score-item.perfect {
+            color: #4CAF50;
+        }
+        .summary .score-item.missed {
+            color: #f44336;
+        }
+        .summary .score-item.accuracy {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+
+        .restart-button {
+            padding: 15px 30px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 0 #45a049;
+        }
+
+        .restart-button:hover {
+            background-color: #45a049;
+            transform: translateY(2px);
+            box-shadow: 2px 0 #45a049;
+        }
+
+        .feedback-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Nunito', sans-serif;
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+        .feedback-message.perfect {
+            color: #4CAF50;
+            animation: fadeInOutScale 1s forwards;
+        }
+        .feedback-message.miss {
+            color: #f44336;
+            animation: shakeFadeOut 1s forwards;
+        }
+        .feedback-message.ueepa {
+            color: #FFEB3B;
+            -webkit-text-stroke: 1px #FFC107;
+            animation: ueepaAnimation 1.5s forwards;
+        }
+
+        @keyframes fadeInOutScale {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            80% { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -150%) scale(0.8); }
+        }
+        @keyframes shakeFadeOut {
+            0% { opacity: 1; transform: translate(-50%, -50%) rotate(0deg); }
+            10% { transform: translate(-55%, -50%) rotate(-5deg); }
+            20% { transform: translate(-45%, -50%) rotate(5deg); }
+            30% { transform: translate(-55%, -50%) rotate(-5deg); }
+            40% { transform: translate(-45%, -50%) rotate(5deg); }
+            50% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg); }
+        }
+        @keyframes ueepaAnimation {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2) rotate(-5deg); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8) rotate(5deg); }
+        }
+
+        .game-area {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 80%);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: background 0.5s ease-in-out;
+        }
+
+        .game-area.slowmo-effect {
+            background-color: rgba(255, 255, 100, 0.2);
+        }
+
+        .hit-zone {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 50px;
+            border-bottom: 2px solid #4CAF50;
+        }
+
+        .falling-note {
+            position: absolute;
+            top: -50px;
+            width: 80px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+            box-sizing: border-box;
+        }
+        .falling-note.quarter {
+            height: 45px;
+        }
+        .falling-note.eighth {
+            height: 25px;
+        }
+        .falling-note.half {
+            height: 100px;
+        }
+        .falling-note.perfect {
+            background-color: #4CAF50 !important;
+            animation: pulseFadeOut 0.3s forwards;
+        }
+        .falling-note.missed {
+            background-color: #f44336 !important;
+            animation: pulseFadeOut 0.3s forwards;
+        }
+        
+        .filling-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(76, 175, 80, 0.5);
+            height: 0;
+            transition: height 0.1s linear;
+        }
+
+        @keyframes pulseFadeOut {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .piano {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 2px;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 12px;
+            width: 100%;
+            height: 160px;
+            box-sizing: border-box;
+        }
+        .key-wrapper {
+            position: relative;
+            flex-grow: 1;
+            min-width: 40px;
+        }
+        .key {
+            width: 100%;
+            height: 150px;
+            background-color: white;
+            border-radius: 0 0 8px 8px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s, background-color 0.1s;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 10px;
+        }
+        .key span {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+        .key.active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .key.correct { background-color: #4CAF50; }
+        .key.incorrect { background-color: #f44336; }
+        .key.holding-correct {
+            background-color: #76ff7a !important;
+            transform: translateY(2px);
+        }
+        .black-key {
+            width: 60%;
+            height: 90px;
+            background-color: black;
+            position: absolute;
+            top: 0;
+            z-index: 1;
+            border-radius: 0 0 4px 4px;
+            pointer-events: none;
+            left: calc(50% + 15px);
+        }
+        .key-wrapper:nth-child(2) .black-key { left: calc(50% + 5px); }
+        .key-wrapper:nth-child(3) .black-key { left: calc(50% - 5px); }
+        .key-wrapper:nth-child(5) .black-key { left: calc(50% + 5px); }
+        .key-wrapper:nth-child(6) .black-key { left: calc(50% - 5px); }
+        .key-wrapper:nth-child(7) .black-key { left: calc(50% - 15px); }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="close-button" onclick="location.reload()">&times;</button>
+            <div class="instruction">
+                <div class="avatar">L</div>
+                <p id="song-title">Toca la canción...</p>
+            </div>
+            <div class="stars" id="stars-container">
+                <span class="star">★</span>
+                <span class="star">★</span>
+                <span class="star">★</span>
+            </div>
+        </div>
+        <div class="start-screen active">
+            <h1>LearnQuiz Music</h1>
+            <p>¡Selecciona una canción o sube tu propio archivo JSON/MIDI para empezar!</p>
+            <div class="song-grid-container">
+                <div class="song-grid" id="song-grid">
+                    </div>
+                <div class="menu-arrows">
+                    <span class="arrow hidden" id="left-arrow">&lt;</span>
+                    <span class="arrow hidden" id="right-arrow">&gt;</span>
+                </div>
+            </div>
+            <button class="upload-button" onclick="document.getElementById('file-upload').click()">Subir canción</button>
+            <input type="file" id="file-upload" accept=".json, .mid, .midi" style="display: none;">
+        </div>
+        <div class="end-screen" id="end-screen">
+            <h2>¡Lección completada!</h2>
+            <div class="final-stars">
+                <span class="star" id="final-star-1">★</span>
+                <span class="star" id="final-star-2">★</span>
+                <span class="star" id="final-star-3">★</span>
+            </div>
+            <div class="summary">
+                <span class="score-item perfect">
+                    <span class="label">Aciertos:</span> <span id="perfect-count" class="value">0</span>
+                </span>
+                <span class="score-item missed">
+                    <span class="label">Perdidas:</span> <span id="missed-count" class="value">0</span>
+                </span>
+                <span class="score-item accuracy">
+                    <span class="label">Precisión:</span> <span id="accuracy-percent" class="value">0%</span>
+                </span>
+            </div>
+            <button class="restart-button" onclick="returnToMenu()">Volver al menú</button>
+        </div>
+        <div class="feedback-message" id="feedback"></div>
+        <div class="game-area">
+            <div class="hit-zone"></div>
+        </div>
+        <div class="piano">
+            <div class="key-wrapper">
+                <div class="key" data-note="Do" data-key="a"><span>Do</span></div>
+            </div>
+            <div class="key-wrapper">
+                <div class="black-key"></div>
+                <div class="key" data-note="Re" data-key="s"><span>Re</span></div>
+            </div>
+            <div class="key-wrapper">
+                <div class="black-key"></div>
+                <div class="key" data-note="Mi" data-key="d"><span>Mi</span></div>
+            </div>
+            <div class="key-wrapper">
+                <div class="key" data-note="Fa" data-key="f"><span>Fa</span></div>
+            </div>
+            <div class="key-wrapper">
+                <div class="black-key"></div>
+                <div class="key" data-note="Sol" data-key="g"><span>Sol</span></div>
+            </div>
+            <div class="key-wrapper">
+                <div class="black-key"></div>
+                <div class="key" data-note="La" data-key="h"><span>La</span></div>
+            </div>
+            <div class="key-wrapper">
+                <div class="black-key"></div>
+                <div class="key" data-note="Si" data-key="j"><span>Si</span></div>
+            </div>
+            <div class="key-wrapper">
+                <div class="key" data-note="Do2" data-key="k"><span>Do</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/midi-json-parser@1.2.2/dist/umd/midi-json-parser.js"></script>
+
+    <script>
+        // --- Datos de las canciones (Ahora están aquí) ---
+        const songs = {
+            "primeros_pasos": {
+                "title": "Primeros Pasos",
+                "bpm": 60,
+                "difficulty": "facil",
+                "notes": [
+                    ["Do", 1], ["Mi", 1], ["Sol", 1], ["Do2", 1],
+                    ["Sol", 1], ["Mi", 1], ["Do", 2]
+                ]
+            },
+            "ritmo_sencillo": {
+                "title": "Ritmo Sencillo",
+                "bpm": 80,
+                "difficulty": "facil",
+                "notes": [
+                    ["Do", 1], ["Do", 1], ["Re", 1], ["Mi", 1],
+                    ["Mi", 1], ["Fa", 1], ["Sol", 2],
+                    ["Mi", 1], ["Mi", 1], ["Re", 1], ["Re", 1],
+                    ["Do", 2],
+                    ["Do", 1], ["Re", 1], ["Mi", 1], ["Fa", 1],
+                    ["Sol", 1], ["Fa", 1], ["Mi", 1], ["Re", 1],
+                    ["Do", 2]
+                ]
+            },
+            "escalera_musical": {
+                "title": "Escalera Musical",
+                "bpm": 90,
+                "difficulty": "facil",
+                "notes": [
+                    ["Do", 1], ["Re", 1], ["Mi", 1], ["Fa", 1],
+                    ["Sol", 1], ["La", 1], ["Si", 1], ["Do2", 1],
+                    ["Do2", 1], ["Si", 1], ["La", 1], ["Sol", 1],
+                    ["Fa", 1], ["Mi", 1], ["Re", 1], ["Do", 2],
+                    ["Do", 1], ["Re", 1], ["Mi", 1], ["Fa", 1],
+                    ["Sol", 1], ["La", 1], ["Si", 1], ["Do2", 1],
+                    ["Do2", 2], ["Do", 2]
+                ]
+            },
+            "melodia_suave": {
+                "title": "Melodía Suave",
+                "bpm": 95,
+                "difficulty": "facil",
+                "notes": [
+                    ["Do", 1.5], ["Mi", 0.5], ["Sol", 1], ["Sol", 1],
+                    ["La", 1.5], ["Fa", 0.5], ["Mi", 1], ["Mi", 1],
+                    ["Re", 1.5], ["Do", 0.5], ["Re", 1.5], ["Mi", 0.5],
+                    ["Fa", 2], ["Do", 2],
+                    ["Mi", 1.5], ["Fa", 0.5], ["Sol", 1], ["La", 1],
+                    ["Si", 1.5], ["Do2", 0.5], ["Si", 1], ["La", 1],
+                    ["Sol", 1.5], ["Fa", 0.5], ["Sol", 1.5], ["Mi", 0.5],
+                    ["Re", 2], ["Do", 2]
+                ]
+            },
+            "flujo_armonico": {
+                "title": "Flujo Armónico",
+                "bpm": 100,
+                "difficulty": "facil",
+                "notes": [
+                    ["Do", 1], ["Mi", 1], ["Sol", 1], ["Mi", 1],
+                    ["Re", 1], ["Fa", 1], ["La", 1], ["Fa", 1],
+                    ["Mi", 1], ["Sol", 1], ["Si", 1], ["Sol", 1],
+                    ["Do2", 2], ["Do", 2],
+                    ["Mi", 1], ["Do", 1], ["Fa", 1], ["Re", 1],
+                    ["Sol", 1], ["Mi", 1], ["La", 1], ["Fa", 1],
+                    ["Si", 1], ["Sol", 1], ["Do2", 1], ["La", 1],
+                    ["Fa", 2], ["Do", 2]
+                ]
+            },
+            "ritmo_saltarin": {
+                "title": "Ritmo Saltarin",
+                "bpm": 105,
+                "difficulty": "facil",
+                "notes": [
+                    ["Mi", 0.5], ["Sol", 0.5], ["Mi", 1], ["Sol", 1],
+                    ["Re", 0.5], ["Fa", 0.5], ["Re", 1], ["Fa", 1],
+                    ["Do", 0.5], ["Mi", 0.5], ["Do", 1], ["Mi", 1],
+                    ["Fa", 2], ["Sol", 2],
+                    ["La", 0.5], ["Si", 0.5], ["La", 1], ["Si", 1],
+                    ["Sol", 0.5], ["La", 0.5], ["Sol", 1], ["La", 1],
+                    ["Fa", 0.5], ["Sol", 0.5], ["Fa", 1], ["Sol", 1],
+                    ["Mi", 2], ["Do", 2]
+                ]
+            },
+            "vals_lento": {
+                "title": "Vals Lento",
+                "bpm": 85,
+                "difficulty": "facil",
+                "notes": [
+                    ["Mi", 1.5], ["Re", 0.5], ["Do", 2], ["Do", 2],
+                    ["Mi", 1.5], ["Re", 0.5], ["Mi", 2], ["Mi", 2],
+                    ["Fa", 1.5], ["Mi", 0.5], ["Re", 2], ["Re", 2],
+                    ["Mi", 1.5], ["Do", 0.5], ["Mi", 2], ["Sol", 2],
+                    ["Mi", 1.5], ["Sol", 0.5], ["La", 2], ["La", 2],
+                    ["La", 1.5], ["Sol", 0.5], ["Fa", 2], ["Fa", 2]
+                ]
+            },
+            "himno_alegria": {
+                "title": "Himno a la Alegría",
+                "bpm": 100,
+                "difficulty": "medio",
+                "notes": [
+                    ["Mi", 1], ["Mi", 1], ["Fa", 1], ["Sol", 1],
+                    ["Sol", 1], ["Fa", 1], ["Mi", 1], ["Re", 1],
+                    ["Do", 1], ["Do", 1], ["Re", 1], ["Mi", 1],
+                    ["Mi", 1.5], ["Re", 0.5], ["Re", 2],
+                    ["Mi", 1], ["Mi", 1], ["Fa", 1], ["Sol", 1],
+                    ["Sol", 1], ["Fa", 1], ["Mi", 1], ["Re", 1],
+                    ["Do", 1], ["Do", 1], ["Re", 1], ["Mi", 1],
+                    ["Re", 1.5], ["Do", 0.5], ["Do", 2],
+                    ["Re", 1], ["Re", 1], ["Mi", 1], ["Do", 1],
+                    ["Re", 1], ["Mi", 0.5], ["Fa", 0.5], ["Mi", 1], ["Do", 1],
+                    ["Re", 1], ["Mi", 0.5], ["Fa", 0.5], ["Mi", 1], ["Re", 1],
+                    ["Do", 1], ["Re", 1.5], ["Sol", 0.5],
+                    ["Mi", 1], ["Mi", 1], ["Fa", 1], ["Sol", 1],
+                    ["Sol", 1], ["Fa", 1], ["Mi", 1], ["Re", 1],
+                    ["Do", 1], ["Do", 1], ["Re", 1], ["Mi", 1],
+                    ["Re", 1.5], ["Do", 0.5], ["Do", 2]
+                ]
+            },
+            "subida_y_bajada": {
+                "title": "Subida y Bajada",
+                "bpm": 115,
+                "difficulty": "medio",
+                "notes": [
+                    ["Do", 0.5], ["Re", 0.5], ["Mi", 0.5], ["Fa", 0.5],
+                    ["Mi", 1], ["Fa", 1], ["Sol", 1],
+                    ["Sol", 0.5], ["Fa", 0.5], ["Mi", 0.5], ["Re", 0.5],
+                    ["Mi", 1], ["Re", 1], ["Do", 2],
+                    ["La", 1], ["Sol", 1], ["Fa", 1], ["Mi", 1],
+                    ["Re", 2], ["Do", 2],
+                    ["Do", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Fa", 0.5],
+                    ["Mi", 0.5], ["Sol", 0.5], ["Fa", 0.5], ["La", 0.5],
+                    ["Sol", 0.5], ["Si", 0.5], ["La", 0.5], ["Do2", 0.5],
+                    ["Si", 1], ["La", 1], ["Sol", 2], ["Do", 2]
+                ]
+            },
+            "puente_melodico": {
+                "title": "Puente Melódico",
+                "bpm": 105,
+                "difficulty": "medio",
+                "notes": [
+                    ["Mi", 1], ["Mi", 1], ["Fa", 1], ["Sol", 1],
+                    ["Sol", 1], ["Fa", 1], ["Mi", 1], ["Re", 1],
+                    ["Do", 1], ["Do", 1], ["Re", 1], ["Mi", 1],
+                    ["Re", 1], ["Do", 1], ["Do", 2],
+                    ["Re", 0.5], ["Re", 0.5], ["Mi", 0.5], ["Fa", 0.5],
+                    ["Mi", 0.5], ["Fa", 0.5], ["Sol", 0.5], ["Fa", 0.5],
+                    ["Mi", 1.5], ["Do", 0.5], ["Do", 2],
+                    ["Sol", 1.5], ["Mi", 0.5], ["Do", 1], ["Mi", 1],
+                    ["Re", 1.5], ["Do", 0.5], ["Re", 1.5], ["Mi", 0.5],
+                    ["Fa", 2], ["Do", 2]
+                ]
+            },
+            "ritmo_oscilante": {
+                "title": "Ritmo Oscilante",
+                "bpm": 130,
+                "difficulty": "medio",
+                "notes": [
+                    ["Do", 0.5], ["Mi", 0.5], ["Fa", 0.5], ["Re", 0.5],
+                    ["Mi", 0.5], ["Sol", 0.5], ["Fa", 0.5], ["Mi", 0.5],
+                    ["Re", 1], ["Do", 1], ["Sol", 1], ["Mi", 1],
+                    ["Fa", 2], ["Do2", 2],
+                    ["La", 1], ["Sol", 1], ["Fa", 1], ["Mi", 1],
+                    ["Re", 1], ["Do", 1], ["Re", 1], ["Mi", 1],
+                    ["Fa", 2],
+                    ["Fa", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Do", 0.5],
+                    ["Mi", 0.5], ["Fa", 0.5], ["Sol", 0.5], ["La", 0.5],
+                    ["Si", 0.5], ["La", 0.5], ["Sol", 0.5], ["Fa", 0.5],
+                    ["Mi", 1], ["Re", 1], ["Do", 2]
+                ]
+            },
+            "escalada_rapida": {
+                "title": "Escalada Rápida",
+                "bpm": 140,
+                "difficulty": "medio",
+                "notes": [
+                    ["Do", 0.5], ["Re", 0.5], ["Mi", 0.5], ["Fa", 0.5],
+                    ["Sol", 0.5], ["La", 0.5], ["Si", 0.5], ["Do2", 0.5],
+                    ["Sol", 0.5], ["Fa", 0.5], ["Mi", 0.5], ["Re", 0.5],
+                    ["Do", 2], ["Do", 2],
+                    ["Mi", 1], ["Fa", 1], ["Sol", 1], ["La", 1],
+                    ["Si", 1], ["La", 1], ["Sol", 1], ["Fa", 1],
+                    ["Mi", 2], ["Do", 2],
+                    ["Do2", 0.5], ["Si", 0.5], ["La", 0.5], ["Sol", 0.5],
+                    ["Fa", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Do", 0.5],
+                    ["Mi", 0.5], ["Sol", 0.5], ["Mi", 0.5], ["Sol", 0.5],
+                    ["Mi", 2], ["Do", 2]
+                ]
+            },
+            "melodia_entrecortada": {
+                "title": "Melodía Entrecortada",
+                "bpm": 125,
+                "difficulty": "medio",
+                "notes": [
+                    ["Mi", 0.5], ["Mi", 0.5], ["Fa", 0.5], ["Fa", 0.5],
+                    ["Sol", 1], ["Re", 1],
+                    ["Mi", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Re", 0.5],
+                    ["Do", 1], ["Do", 1],
+                    ["Mi", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Re", 0.5],
+                    ["Do", 1], ["Sol", 1],
+                    ["Fa", 1.5], ["Mi", 0.5], ["Re", 2],
+                    ["Do", 0.5], ["Re", 0.5], ["Mi", 0.5], ["Fa", 0.5],
+                    ["Sol", 1], ["Mi", 1], ["Re", 1], ["Do", 1],
+                    ["Mi", 0.5], ["Fa", 0.5], ["Sol", 1], ["La", 1],
+                    ["Si", 2], ["Do2", 2]
+                ]
+            },
+            "cancion_noche_estrellada": {
+                "title": "Claro de Luna",
+                "bpm": 120,
+                "difficulty": "medio",
+                "notes": [
+                    ["Mi", 1], ["Mi", 1], ["Sol", 1], ["Do2", 1],
+                    ["Si", 1], ["La", 1], ["Sol", 1], ["Fa", 1],
+                    ["Mi", 1], ["Re", 1], ["Do", 1], ["Re", 1],
+                    ["Mi", 2], ["Fa", 2],
+                    ["Sol", 1], ["Fa", 1], ["Mi", 1], ["Re", 1],
+                    ["Do", 1], ["Mi", 1], ["Sol", 1], ["Mi", 1],
+                    ["La", 1], ["Sol", 1], ["Fa", 1], ["Re", 1],
+                    ["Do", 2], ["Do", 2]
+                ]
+            },
+            "danzadel_azucar": {
+                "title": "Danza del Hada del Azúcar",
+                "bpm": 160,
+                "difficulty": "dificil",
+                "notes": [
+                    ["La", 0.5], ["Sol", 0.5], ["Fa", 0.5], ["Mi", 0.5],
+                    ["Re", 0.5], ["Mi", 0.5], ["Fa", 0.5], ["Sol", 0.5],
+                    ["La", 0.5], ["Sol", 0.5], ["Fa", 0.5], ["Mi", 0.5],
+                    ["Re", 2], ["Mi", 2],
+                    ["Mi", 0.5], ["Fa", 0.5], ["Sol", 0.5], ["La", 0.5],
+                    ["Si", 0.5], ["La", 0.5], ["Sol", 0.5], ["Fa", 0.5],
+                    ["Mi", 0.5], ["Fa", 0.5], ["Sol", 0.5], ["La", 0.5],
+                    ["Si", 2], ["La", 2],
+                    ["Do2", 0.5], ["Si", 0.5], ["La", 0.5], ["Sol", 0.5],
+                    ["Fa", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Do", 0.5],
+                    ["Sol", 0.5], ["La", 0.5], ["Si", 0.5], ["Do2", 0.5],
+                    ["Sol", 2], ["Do", 2]
+                ]
+            },
+            "duelo_ritmico": {
+                "title": "Duelo Rítmico",
+                "bpm": 160,
+                "difficulty": "dificil",
+                "notes": [
+                    ["Do", 0.5], ["Mi", 0.5], ["Sol", 0.5], ["Mi", 0.5],
+                    ["Do", 0.5], ["Mi", 0.5], ["Sol", 0.5], ["Mi", 0.5],
+                    ["Re", 0.5], ["Fa", 0.5], ["La", 0.5], ["Fa", 0.5],
+                    ["Re", 0.5], ["Fa", 0.5], ["La", 0.5], ["Fa", 0.5],
+                    ["Mi", 1], ["Fa", 1], ["Sol", 1], ["La", 1],
+                    ["Si", 1], ["Do2", 1], ["Si", 1], ["La", 1],
+                    ["Sol", 1], ["Fa", 1], ["Mi", 1], ["Re", 1],
+                    ["Do", 2],
+                    ["Mi", 0.5], ["Sol", 0.5], ["Si", 0.5], ["Do2", 0.5],
+                    ["Si", 0.5], ["Sol", 0.5], ["Mi", 0.5], ["Fa", 0.5],
+                    ["Re", 0.5], ["Fa", 0.5], ["La", 0.5], ["Do2", 0.5],
+                    ["Si", 1.5], ["Mi", 0.5], ["Do", 2]
+                ]
+            },
+            "tormenta_de_notas": {
+                "title": "Tormenta de Notas",
+                "bpm": 170,
+                "difficulty": "dificil",
+                "notes": [
+                    ["Do", 0.5], ["Re", 0.5], ["Mi", 0.5], ["Fa", 0.5],
+                    ["Sol", 0.5], ["La", 0.5], ["Si", 0.5], ["Do2", 0.5],
+                    ["Mi", 0.5], ["Fa", 0.5], ["Sol", 0.5], ["La", 0.5],
+                    ["Sol", 0.5], ["Fa", 0.5], ["Mi", 0.5], ["Re", 0.5],
+                    ["Do", 0.5], ["Re", 0.5], ["Mi", 0.5], ["Re", 0.5],
+                    ["Do", 0.5], ["Re", 0.5], ["Mi", 0.5], ["Re", 0.5],
+                    ["Do", 2],
+                    ["Mi", 0.5], ["Sol", 0.5], ["Fa", 0.5], ["La", 0.5],
+                    ["Sol", 0.5], ["Si", 0.5], ["La", 0.5], ["Do2", 0.5],
+                    ["Si", 0.5], ["Sol", 0.5], ["Fa", 0.5], ["Mi", 0.5],
+                    ["Re", 0.5], ["Do", 0.5], ["Do2", 0.5], ["Re", 0.5]
+                ]
+            },
+            "zigzag_melodico": {
+                "title": "Zigzag Melódico",
+                "bpm": 155,
+                "difficulty": "dificil",
+                "notes": [
+                    ["Do", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Fa", 0.5],
+                    ["Mi", 0.5], ["Sol", 0.5], ["Fa", 0.5], ["La", 0.5],
+                    ["Sol", 0.5], ["Si", 0.5], ["La", 0.5], ["Do2", 0.5],
+                    ["Si", 1], ["Do2", 1], ["Do2", 2],
+                    ["Mi", 0.5], ["Sol", 0.5], ["Fa", 0.5], ["La", 0.5],
+                    ["Sol", 0.5], ["Si", 0.5], ["La", 0.5], ["Do2", 0.5],
+                    ["Si", 1], ["Sol", 1], ["Mi", 2],
+                    ["Do", 0.5], ["Mi", 0.5], ["Sol", 0.5], ["Mi", 0.5],
+                    ["Fa", 0.5], ["La", 0.5], ["Sol", 0.5], ["Si", 0.5],
+                    ["Do2", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Fa", 0.5],
+                    ["Mi", 2], ["Do", 2]
+                ]
+            },
+            "frenesi_ritmico": {
+                "title": "Frenesí Rítmico",
+                "bpm": 180,
+                "difficulty": "dificil",
+                "notes": [
+                    ["Do", 0.5], ["Do", 0.5], ["Re", 0.5], ["Re", 0.5],
+                    ["Mi", 0.5], ["Mi", 0.5], ["Fa", 0.5], ["Fa", 0.5],
+                    ["Sol", 0.5], ["Sol", 0.5], ["La", 0.5], ["La", 0.5],
+                    ["Si", 0.5], ["Si", 0.5], ["Do2", 0.5], ["Do2", 0.5],
+                    ["Fa", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Do", 0.5],
+                    ["La", 0.5], ["Sol", 0.5], ["Fa", 0.5], ["Mi", 0.5],
+                    ["Do", 0.5], ["Do2", 0.5], ["Do", 0.5], ["Do2", 0.5],
+                    ["Mi", 0.5], ["Sol", 0.5], ["Si", 0.5], ["Do2", 0.5],
+                    ["Si", 0.5], ["La", 0.5], ["Sol", 0.5], ["Fa", 0.5],
+                    ["Mi", 0.5], ["Re", 0.5], ["Do", 0.5], ["Re", 0.5],
+                    ["Mi", 0.5], ["Do", 0.5], ["Sol", 0.5], ["Mi", 0.5]
+                ]
+            },
+            "noche_oscura": {
+                "title": "Noche Oscura",
+                "bpm": 120,
+                "difficulty": "dificil",
+                "notes": [
+                    ["Do", 1], ["Sol", 1], ["Do", 1], ["Mi", 1],
+                    ["Fa", 1], ["La", 1], ["Fa", 1], ["Re", 1],
+                    ["Mi", 1], ["Sol", 1], ["Mi", 1], ["Do", 1],
+                    ["Re", 0.5], ["Mi", 0.5], ["Fa", 0.5], ["Sol", 0.5],
+                    ["La", 1.5], ["Fa", 0.5], ["Mi", 2],
+                    ["Do", 2],
+                    ["La", 1], ["Sol", 1], ["Fa", 1], ["Mi", 1],
+                    ["Re", 1], ["Do", 1], ["Sol", 1], ["Re", 1],
+                    ["Mi", 0.5], ["Fa", 0.5], ["Sol", 0.5], ["La", 0.5],
+                    ["Sol", 1.5], ["Fa", 0.5], ["Mi", 2],
+                    ["Do", 2]
+                ]
+            },
+            "pista_imposible": {
+                "title": "Pista Imposible",
+                "bpm": 190,
+                "difficulty": "dificil",
+                "notes": [
+                    ["Do", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Fa", 0.5], ["Mi", 0.5], ["Sol", 0.5], ["Fa", 0.5], ["La", 0.5],
+                    ["Sol", 0.5], ["Si", 0.5], ["La", 0.5], ["Do2", 0.5], ["Si", 0.5], ["Sol", 0.5], ["La", 0.5], ["Fa", 0.5],
+                    ["Sol", 0.5], ["Mi", 0.5], ["Fa", 0.5], ["Re", 0.5], ["Mi", 0.5], ["Do", 0.5], ["Re", 0.5], ["Mi", 0.5],
+                    ["Do", 0.5], ["Do2", 0.5], ["Do", 0.5], ["Do2", 0.5], ["Do", 0.5], ["Do2", 0.5], ["Do", 0.5], ["Do2", 0.5],
+                    ["Do", 0.5], ["Mi", 0.5], ["Sol", 0.5], ["La", 0.5], ["Si", 0.5], ["Do2", 0.5], ["Do2", 0.5], ["Si", 0.5],
+                    ["La", 0.5], ["Sol", 0.5], ["Fa", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Do", 0.5], ["Re", 0.5], ["Mi", 0.5],
+                    ["Fa", 0.5], ["Sol", 0.5], ["La", 0.5], ["Si", 0.5], ["Do2", 0.5], ["Sol", 0.5], ["Mi", 0.5], ["Do", 0.5]
+                ]
+            },
+            "maestro_del_ritmo": {
+                "title": "Maestro del Ritmo",
+                "bpm": 140,
+                "difficulty": "dificil",
+                "notes": [
+                    ["Do", 1], ["Re", 0.5], ["Mi", 0.5], ["Fa", 1], ["Sol", 0.5], ["Fa", 0.5],
+                    ["Mi", 1], ["Re", 0.5], ["Do", 0.5], ["Re", 1], ["Mi", 0.5], ["Re", 0.5],
+                    ["Do", 1], ["Sol", 1], ["Fa", 1], ["La", 1],
+                    ["Si", 0.5], ["La", 0.5], ["Sol", 0.5], ["Fa", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Do", 0.5], ["Do2", 0.5],
+                    ["Sol", 1], ["Do", 1], ["Re", 1], ["Mi", 1],
+                    ["Do", 1], ["Re", 1], ["Mi", 1], ["Fa", 1],
+                    ["Sol", 1], ["Fa", 1], ["Mi", 1], ["Re", 1],
+                    ["Do", 1], ["Re", 1], ["Mi", 1], ["Re", 1],
+                    ["Do", 1], ["Do", 1], ["Re", 1], ["Mi", 1],
+                    ["Fa", 1], ["Fa", 1], ["Mi", 1], ["Mi", 1],
+                    ["Re", 1], ["Re", 1], ["Do", 1], ["Do", 1],
+                ]
+            },
+            "para_elisa": {
+                "title": "Para Elisa",
+                "bpm": 110,
+                "difficulty": "dificil",
+                "notes": [
+                    ["Mi", 0.5], ["Re", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Mi", 0.5], ["Si", 0.5], ["Re", 0.5], ["Do", 0.5],
+                    ["La", 1.5], ["Do", 0.5], ["Mi", 0.5], ["La", 0.5], ["Si", 1.5], ["Mi", 0.5], ["Sol", 0.5], ["Si", 0.5],
+                    ["Do2", 1.5], ["Mi", 0.5], ["Re", 0.5], ["Mi", 0.5], ["Re", 0.5], ["Mi", 0.5], ["Si", 0.5], ["Re", 0.5],
+                    ["Do", 0.5], ["La", 1.5], ["Do", 0.5], ["Mi", 0.5], ["La", 0.5], ["Si", 1.5], ["Do", 0.5], ["Mi", 0.5]
+                ]
+            }
+        };
+        
+        const songIds = Object.keys(songs);
+        let currentPage = 0;
+        const songsPerPage = 3;
+
+        // --- Web Audio API para generar sonido ---
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const noteFrequencies = {
+            'Do': 261.63, 'Re': 293.66, 'Mi': 329.63, 'Fa': 349.23,
+            'Sol': 392.00, 'La': 440.00, 'Si': 493.88, 'Do2': 523.25
+        };
+
+        const pitchToNote = {
+            60: 'Do', 62: 'Re', 64: 'Mi', 65: 'Fa',
+            67: 'Sol', 69: 'La', 71: 'Si', 72: 'Do2'
+        };
+
+        function playNote(note) {
+            const freq = noteFrequencies[note];
+            if (!freq) return;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // --- Lógica del juego (DDR-style) ---
+        const startScreen = document.querySelector('.start-screen');
+        const endScreen = document.getElementById('end-screen');
+        const gameArea = document.querySelector('.game-area');
+        const keys = document.querySelectorAll('.key');
+        const feedback = document.getElementById('feedback');
+        const starsContainer = document.getElementById('stars-container');
+        const songGrid = document.getElementById('song-grid');
+        const songTitleElement = document.getElementById('song-title');
+        const leftArrow = document.getElementById('left-arrow');
+        const rightArrow = document.getElementById('right-arrow');
+        const fileUpload = document.getElementById('file-upload');
+
+        let currentSongData = null;
+        let noteDurationMs;
+        let fallingNotes = [];
+        let songIndex = 0;
+        const baseNoteSpeed = 3;
+        let noteSpeed = baseNoteSpeed;
+        const hitZoneY = gameArea.offsetHeight - 50;
+        const keyMap = {
+            'a': 'Do', 's': 'Re', 'd': 'Mi', 'f': 'Fa',
+            'g': 'Sol', 'h': 'La', 'j': 'Si', 'k': 'Do2'
+        };
+
+        const noteColors = {
+            'Do': '#3f51b5', 'Re': '#009688', 'Mi': '#4CAF50', 'Fa': '#FF9800',
+            'Sol': '#f44336', 'La': '#9c27b0', 'Si': '#2196f3', 'Do2': '#607d8b'
+        };
+
+        let gameStarted = false;
+        let consecutiveFails = 0;
+        const slowmoThreshold = 3;
+        let correctHits = 0;
+        let missedNotes = 0;
+        let totalNotesToHit = 0;
+        let activeKeys = {};
+        let finishTimeout;
+
+        // --- Lógica de Cookies para guardar el récord ---
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + date.toUTCString();
+            document.cookie = `${name}=${value};${expires};path=/`;
+        }
+
+        function getCookie(name) {
+            const cname = `${name}=`;
+            const decodedCookie = decodeURIComponent(document.cookie);
+            const ca = decodedCookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(cname) === 0) {
+                    return c.substring(cname.length, c.length);
+                }
+            }
+            return "";
+        }
+
+        function saveRecord(songId, stars) {
+            const currentRecord = getCookie(`record_${songId}`);
+            if (!currentRecord || stars > parseInt(currentRecord)) {
+                setCookie(`record_${songId}`, stars, 365);
+            }
+        }
+
+        function getRecord(songId) {
+            const record = getCookie(`record_${songId}`);
+            return record ? parseInt(record) : 0;
+        }
+
+        // --- Lógica del menú principal ---
+        function displaySongGrid() {
+            songGrid.innerHTML = '';
+            const startIndex = currentPage * songsPerPage;
+            const endIndex = startIndex + songsPerPage;
+            const songsToDisplay = songIds.slice(startIndex, endIndex);
+
+            songsToDisplay.forEach(songId => {
+                const songData = songs[songId];
+                const record = getRecord(songId);
+                const songItem = document.createElement('div');
+                songItem.className = `song-item difficulty-${songData.difficulty}`;
+                songItem.innerHTML = `
+                    <h3>${songData.title}</h3>
+                    <div class="record-stars">
+                        ${[...Array(3)].map((_, i) => `<span class="star ${i < record ? 'filled' : ''}">★</span>`).join('')}
+                    </div>
+                `;
+                songItem.addEventListener('click', () => {
+                    loadAndPlaySong(songId);
+                });
+                songGrid.appendChild(songItem);
+            });
+            
+            updateNavigationArrows();
+        }
+
+        function updateNavigationArrows() {
+            if (songIds.length > songsPerPage) {
+                leftArrow.classList.toggle('hidden', currentPage === 0);
+                rightArrow.classList.toggle('hidden', currentPage >= Math.ceil(songIds.length / songsPerPage) - 1);
+            } else {
+                leftArrow.classList.add('hidden');
+                rightArrow.classList.add('hidden');
+            }
+        }
+
+        leftArrow.addEventListener('click', () => {
+            if (currentPage > 0) {
+                currentPage--;
+                displaySongGrid();
+            }
+        });
+
+        rightArrow.addEventListener('click', () => {
+            if (currentPage < Math.ceil(songIds.length / songsPerPage) - 1) {
+                currentPage++;
+                displaySongGrid();
+            }
+        });
+
+        fileUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    if (file.name.toLowerCase().endsWith('.mid') || file.name.toLowerCase().endsWith('.midi')) {
+                        const arrayBuffer = e.target.result;
+                        const midiJson = await midiJsonParser.parse(arrayBuffer);
+                        
+                        const convertedSong = convertMidiToSongData(midiJson, file.name);
+                        loadUploadedSong(convertedSong);
+                    } else if (file.name.toLowerCase().endsWith('.json')) {
+                        const uploadedSong = JSON.parse(e.target.result);
+                        if (uploadedSong.title && uploadedSong.bpm && uploadedSong.notes) {
+                            loadUploadedSong(uploadedSong);
+                        } else {
+                            alert("El archivo JSON no tiene el formato correcto (debe tener 'title', 'bpm' y 'notes').");
+                        }
+                    } else {
+                        alert("Formato de archivo no soportado. Por favor, sube un archivo .json o .mid/.midi.");
+                    }
+                } catch (error) {
+                    console.error("Error al procesar el archivo:", error);
+                    alert("Error al leer el archivo. Asegúrate de que es un archivo válido.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+        
+        // Función para convertir MIDI a nuestro formato de canción
+        function convertMidiToSongData(midiData, fileName) {
+            const tempoEvent = midiData.tracks[0].find(event => event.setTempo);
+            const bpm = tempoEvent ? Math.round(60000000 / tempoEvent.setTempo.microsecondsPerBeat) : 120;
+            const ticksPerBeat = midiData.header.ticksPerBeat;
+
+            const notes = [];
+            let currentTime = 0;
+
+            const noteOnEvents = {}; // Para manejar la duración de las notas
+            
+            // Recorrer todos los eventos de todas las pistas para capturar las notas
+            for (const track of midiData.tracks) {
+                for (const event of track) {
+                    currentTime += event.delta;
+
+                    if (event.noteOn) {
+                        const note = pitchToNote[event.noteOn.noteNumber];
+                        if (note) {
+                            noteOnEvents[event.noteOn.noteNumber] = currentTime;
+                        }
+                    } else if (event.noteOff) {
+                        const note = pitchToNote[event.noteOff.noteNumber];
+                        if (note && noteOnEvents[event.noteOff.noteNumber] !== undefined) {
+                            const startTime = noteOnEvents[event.noteOff.noteNumber];
+                            const durationTicks = currentTime - startTime;
+                            const durationBeats = durationTicks / ticksPerBeat;
+                            
+                            notes.push([note, durationBeats]);
+                            delete noteOnEvents[event.noteOff.noteNumber];
+                        }
+                    }
+                }
+            }
+
+            // Ordenar las notas por su tiempo de inicio original (aunque en este caso ya deberían estarlo)
+            notes.sort((a, b) => a[2] - b[2]);
+
+            return {
+                title: fileName.replace(/\.(mid|midi|json)$/i, '') + ' (MIDI)',
+                bpm: bpm,
+                difficulty: "medio", // Por defecto
+                notes: notes.map(([note, duration]) => [note, Math.round(duration * 2) / 2])
+            };
+        }
+
+        function loadUploadedSong(songData) {
+             // Se le da un ID único para no interferir con las canciones predefinidas
+            const tempSongId = `uploaded_${Date.now()}`;
+            songs[tempSongId] = songData;
+            songs[tempSongId].id = tempSongId;
+            loadAndPlaySong(tempSongId);
+            // Quitar la canción subida del objeto después de jugar para no guardarla
+            delete songs[tempSongId];
+        }
+
+        function loadAndPlaySong(songId) {
+            const songData = songs[songId];
+            if (!songData) {
+                console.error("Canción no encontrada:", songId);
+                return;
+            }
+            
+            currentSongData = songData;
+            songTitleElement.textContent = `Toca la canción '${currentSongData.title}'`;
+
+            resetGame();
+            
+            noteDurationMs = (60 / currentSongData.bpm) * 1000;
+            totalNotesToHit = currentSongData.notes.length;
+            noteSpeed = baseNoteSpeed * (currentSongData.bpm / 120);
+
+            gameStarted = true;
+            startScreen.classList.remove('active');
+            spawnNextNote();
+            updateGame();
+        }
+
+        function updateStars() {
+            const stars = starsContainer.querySelectorAll('.star');
+            const percentCorrect = totalNotesToHit > 0 ? ((correctHits / totalNotesToHit) * 100) : 0;
+            
+            stars.forEach(star => star.classList.remove('filled'));
+            if (percentCorrect >= 20) { stars[0].classList.add('filled'); }
+            if (percentCorrect >= 50) { stars[1].classList.add('filled'); }
+            if (percentCorrect >= 80) { stars[2].classList.add('filled'); }
+        }
+
+        function animateNumber(elementId, start, end, duration) {
+            const element = document.getElementById(elementId);
+            let startTime = null;
+            function step(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const progress = timestamp - startTime;
+                const value = Math.floor(progress / duration * (end - start) + start);
+                element.textContent = value + (elementId === 'accuracy-percent' ? '%' : '');
+                if (progress < duration) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    element.textContent = end + (elementId === 'accuracy-percent' ? '%' : '');
+                }
+            }
+            window.requestAnimationFrame(step);
+        }
+
+        function showEndScreen() {
+            const finalStars = endScreen.querySelectorAll('.final-stars .star');
+            const totalAttempts = correctHits + missedNotes;
+            const percentCorrect = totalAttempts > 0 ? ((correctHits / totalAttempts) * 100) : 0;
+            
+            const starsEarned = percentCorrect >= 80 ? 3 : percentCorrect >= 50 ? 2 : percentCorrect >= 20 ? 1 : 0;
+            
+            // Solo guardar el récord si la canción es de las predefinidas
+            const isDefaultSong = songIds.includes(currentSongData.id);
+            if (isDefaultSong) {
+                saveRecord(currentSongData.id, starsEarned);
+            }
+            
+            finalStars.forEach(star => star.classList.remove('filled'));
+            
+            setTimeout(() => {
+                if (starsEarned >= 1) finalStars[0].classList.add('filled');
+            }, 300);
+            setTimeout(() => {
+                if (starsEarned >= 2) finalStars[1].classList.add('filled');
+            }, 600);
+            setTimeout(() => {
+                if (starsEarned >= 3) finalStars[2].classList.add('filled');
+            }, 900);
+
+            animateNumber('perfect-count', 0, correctHits, 1000);
+            animateNumber('missed-count', 0, missedNotes, 1000);
+            animateNumber('accuracy-percent', 0, Math.round(percentCorrect), 1000);
+            
+            endScreen.classList.add('active');
+        }
+
+        function resetGame() {
+            gameStarted = false;
+            consecutiveFails = 0;
+            correctHits = 0;
+            missedNotes = 0;
+            songIndex = 0;
+            clearTimeout(finishTimeout);
+            fallingNotes.forEach(note => gameArea.removeChild(note.element));
+            fallingNotes = [];
+            starsContainer.querySelectorAll('.star').forEach(star => star.classList.remove('filled'));
+            noteSpeed = baseNoteSpeed;
+            gameArea.classList.remove('slowmo-effect');
+        }
+
+        function returnToMenu() {
+            endScreen.classList.remove('active');
+            startScreen.classList.add('active');
+            displaySongGrid();
+        }
+
+        function showFeedback(text, type) {
+            feedback.textContent = text;
+            feedback.className = `feedback-message ${type}`;
+            setTimeout(() => {
+                feedback.className = 'feedback-message';
+            }, 1000);
+        }
+
+        function createNote(note, duration) {
+            const noteElement = document.createElement('div');
+            noteElement.classList.add('falling-note');
+            noteElement.textContent = note;
+            noteElement.style.backgroundColor = noteColors[note];
+
+            const keyElement = document.querySelector(`.key[data-note="${note}"]`);
+            if (keyElement) {
+                const keyRect = keyElement.getBoundingClientRect();
+                const gameAreaRect = gameArea.getBoundingClientRect();
+                noteElement.style.left = `${keyRect.left - gameAreaRect.left + (keyRect.width / 2) - 40}px`;
+            }
+            
+            let noteHeight;
+            if (duration === 0.5) {
+                noteHeight = 25;
+                noteElement.classList.add('eighth');
+            } else if (duration === 2) {
+                noteHeight = 100;
+                noteElement.classList.add('half');
+            } else {
+                noteHeight = 45;
+                noteElement.classList.add('quarter');
+            }
+            noteElement.style.height = `${noteHeight}px`;
+
+            fallingNotes.push({ element: noteElement, note: note, y: -noteHeight, duration: duration, isHeld: false });
+            gameArea.appendChild(noteElement);
+        }
+
+        function updateGame() {
+            if (!gameStarted) return;
+            for (let i = fallingNotes.length - 1; i >= 0; i--) {
+                const note = fallingNotes[i];
+                
+                if (note.duration > 1 && note.isHeld) {
+                    const fillingBar = note.element.querySelector('.filling-bar');
+                    if (fillingBar) {
+                        const holdDuration = noteDurationMs * note.duration;
+                        const progress = (Date.now() - note.holdStartTime) / (holdDuration / 2);
+                        fillingBar.style.height = `${Math.min(100, progress * 100)}%`;
+
+                        if (progress >= 1.0) {
+                            // Esta lógica se mueve al soltar la tecla
+                        }
+                    }
+                }
+                
+                note.y += noteSpeed;
+                note.element.style.top = `${note.y}px`;
+
+                const noteBottom = note.y + note.element.offsetHeight;
+                if (noteBottom > hitZoneY + 70) {
+                    gameArea.removeChild(note.element);
+                    fallingNotes.splice(i, 1);
+                    missedNotes++;
+                    if (consecutiveFails >= slowmoThreshold) {
+                        enterSlowmo();
+                    }
+                }
+            }
+            requestAnimationFrame(updateGame);
+        }
+
+        function spawnNextNote() {
+            if (!gameStarted) return;
+            if (songIndex < currentSongData.notes.length) {
+                const [note, duration] = currentSongData.notes[songIndex];
+                createNote(note, duration);
+                
+                const interval = noteDurationMs * duration;
+                songIndex++;
+                
+                setTimeout(spawnNextNote, interval);
+            } else {
+                finishTimeout = setTimeout(() => {
+                    gameStarted = false;
+                    fallingNotes.forEach(note => gameArea.removeChild(note.element));
+                    fallingNotes = [];
+                    showEndScreen();
+                }, 5000); 
+            }
+        }
+        
+        function enterSlowmo() {
+            if (noteSpeed > 1) {
+                noteSpeed = baseNoteSpeed / 2;
+                gameArea.classList.add('slowmo-effect');
+                showFeedback('¡Ueepa!', 'ueepa');
+            }
+        }
+
+        function exitSlowmo() {
+            if (noteSpeed < baseNoteSpeed) {
+                noteSpeed = baseNoteSpeed * (currentSongData.bpm / 120);
+                gameArea.classList.remove('slowmo-effect');
+            }
+        }
+        
+        function handleKeypress(note) {
+            if (!gameStarted) return;
+            playNote(note);
+            const keyElement = document.querySelector(`.key[data-note="${note}"]`);
+            if (keyElement) {
+                keyElement.classList.remove('correct', 'incorrect');
+                keyElement.classList.add('active');
+                
+                let hit = false;
+                for (let i = fallingNotes.length - 1; i >= 0; i--) {
+                    const fallingNote = fallingNotes[i];
+                    const noteTop = fallingNote.y;
+                    const noteBottom = fallingNote.y + fallingNote.element.offsetHeight;
+                    const hitZoneTop = hitZoneY - 40;
+                    const hitZoneBottom = hitZoneY + 50;
+
+                    if (fallingNote.note === note && (noteTop < hitZoneBottom && noteBottom > hitZoneTop)) {
+                        if (fallingNote.duration > 1) {
+                            if (!fallingNote.isHeld) {
+                                fallingNote.isHeld = true;
+                                fallingNote.holdStartTime = Date.now();
+                                keyElement.classList.add('holding-correct');
+                                const fillingBar = document.createElement('div');
+                                fillingBar.classList.add('filling-bar');
+                                fallingNote.element.appendChild(fillingBar);
+                            }
+                        } else {
+                            fallingNote.element.classList.add('perfect');
+                            setTimeout(() => gameArea.removeChild(fallingNote.element), 300);
+                            fallingNotes.splice(i, 1);
+                            showFeedback('¡Perfecto!', 'perfect');
+                            keyElement.classList.add('correct');
+                            setTimeout(() => keyElement.classList.remove('correct'), 500);
+                            consecutiveFails = 0;
+                            correctHits++;
+                            updateStars();
+                            exitSlowmo();
+                        }
+                        hit = true;
+                        break;
+                    }
+                }
+                
+                if (!hit) {
+                    showFeedback('¡Mal!', 'miss');
+                    keyElement.classList.add('incorrect');
+                    setTimeout(() => keyElement.classList.remove('incorrect'), 500);
+                    consecutiveFails++;
+                    if (consecutiveFails >= slowmoThreshold) {
+                        enterSlowmo();
+                    }
+                }
+            }
+        }
+
+        function handleKeyrelease(note) {
+            const keyElement = document.querySelector(`.key[data-note="${note}"]`);
+            if (keyElement) {
+                keyElement.classList.remove('active', 'holding-correct');
+            }
+
+            for (let i = fallingNotes.length - 1; i >= 0; i--) {
+                const fallingNote = fallingNotes[i];
+                if (fallingNote.isHeld && fallingNote.note === note) {
+                    const fillingBar = fallingNote.element.querySelector('.filling-bar');
+                    const holdDuration = noteDurationMs * fallingNote.duration;
+                    const progress = (Date.now() - fallingNote.holdStartTime) / (holdDuration / 2);
+
+                    if (progress >= 1.0) {
+                        showFeedback('¡Perfecto!', 'perfect');
+                        consecutiveFails = 0;
+                        correctHits++;
+                        updateStars();
+                        exitSlowmo();
+                    } else {
+                        showFeedback('¡Demasiado pronto!', 'miss');
+                        missedNotes++;
+                        consecutiveFails++;
+                        if (consecutiveFails >= slowmoThreshold) {
+                            enterSlowmo();
+                        }
+                    }
+                    fallingNote.isHeld = false;
+                    fallingNote.element.classList.add('missed');
+                    setTimeout(() => gameArea.removeChild(fallingNote.element), 300);
+                    fallingNotes.splice(i, 1);
+                    break;
+                }
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const note = keyMap[e.key.toLowerCase()];
+            if (note) {
+                if (!activeKeys[e.key]) {
+                    handleKeypress(note);
+                    activeKeys[e.key] = true;
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const note = keyMap[e.key.toLowerCase()];
+            if (note) {
+                handleKeyrelease(note);
+                delete activeKeys[e.key];
+            }
+        });
+
+        keys.forEach(key => {
+            key.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const note = key.dataset.note;
+                const mappedKey = key.dataset.key;
+                if (!activeKeys[mappedKey]) {
+                    handleKeypress(note);
+                    activeKeys[mappedKey] = true;
+                }
+            });
+            key.addEventListener('mouseup', () => {
+                const note = key.dataset.note;
+                const mappedKey = key.dataset.key;
+                handleKeyrelease(note);
+                delete activeKeys[mappedKey];
+            });
+            key.addEventListener('mouseout', () => {
+                const note = key.dataset.note;
+                const mappedKey = key.dataset.key;
+                if (activeKeys[mappedKey]) {
+                    handleKeyrelease(note);
+                    delete activeKeys[mappedKey];
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            displaySongGrid();
+        });
+    </script>
+</body>
+</html>
